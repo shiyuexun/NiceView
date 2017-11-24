@@ -21,16 +21,16 @@ import com.example.asi.myapplication.good.GoodView;
 /**
  * @author asi
  * @version V1.0
- * @Description: 加关注view
+ * @Description: 点赞view
  * @date 2017/11/8 19:59
  */
 public class DoneView extends View {
 
-    public interface OnDoneClickListener {
+    public interface OnClickLikeListener {
         void onClick(boolean isDone);
     }
 
-    private OnDoneClickListener mListener;
+    private OnClickLikeListener mListener;
     private int mHeight;
     private int mWidth;
     private Paint mRoundPaint, mTextPaint, mBpPaint;
@@ -41,7 +41,7 @@ public class DoneView extends View {
     private int num = 0;
     private ValueAnimator animator_circle_to_round;
     private float mCurDistance;//移动距离
-    private int mDefault__distance;
+    private int mDefault__distance = 1;
     private Bitmap mBp;
     private Bitmap mBped;
     private float bpSize, textWidth;
@@ -57,6 +57,7 @@ public class DoneView extends View {
 
     public DoneView(Context context) {
         this(context, null);
+
     }
 
 
@@ -66,20 +67,9 @@ public class DoneView extends View {
 
     public DoneView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.like_view);
-        BitmapDrawable bitmap = (BitmapDrawable) ta.getDrawable(R.styleable.like_view_bp);
-        if (bitmap != null) {
-            mBp = bitmap.getBitmap();
-        } else {
-            mBp = BitmapFactory.decodeResource(getResources(), R.mipmap.vp_zan_click);
-        }
-        BitmapDrawable bitmaped = (BitmapDrawable) ta.getDrawable(R.styleable.like_view_bped);
-        if (bitmaped != null) {
-            mBped = bitmaped.getBitmap();
-        } else {
-            mBped = BitmapFactory.decodeResource(getResources(), R.mipmap.vp_zan_clicked);
-        }
 
+        mBp = BitmapFactory.decodeResource(getResources(), R.mipmap.vp_zan_click);
+        mBped = BitmapFactory.decodeResource(getResources(), R.mipmap.vp_zan_clicked);
         initView();
         initData();
     }
@@ -120,6 +110,9 @@ public class DoneView extends View {
         mBpPaint.setAntiAlias(true);
         mTextPaint.setAntiAlias(true);
 
+        mBpPaint.setFilterBitmap(true);
+        mBpPaint.setDither(true);
+
         mTextPaint.setColor(Color.parseColor("#3c3c3c"));
         mTextPaint.setStyle(Paint.Style.STROKE);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -130,33 +123,35 @@ public class DoneView extends View {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (animator_circle_to_round != null && animator_circle_to_round.isRunning()) {
-                    return;
-                }
-                isDone = !isDone;
-                if (mListener!=null){
-                    mListener.onClick(isDone);
-                }
-                if (!isDone) {
-                    if (num == 1) {
-                        num--;
-                        set_rect_to_circle_animation();
-                    } else {
-                        num--;
-                        pic = mBp;
-                        invalidate();
+                    if (animator_circle_to_round != null && animator_circle_to_round.isRunning()) {
+                        return;
                     }
+                    isDone = !isDone;
+                    if (mListener != null) {
+                        mListener.onClick(isDone);
+                    }
+                    if (!isDone) {
+                        if (num == 1) {
+                            num--;
+                            set_rect_to_circle_animation();
+                        } else {
+                            num--;
+                            pic = mBp;
+                            invalidate();
+                        }
 
-                } else {
-                    if (num == 0) {
-                        num++;
-                        set_circle_to_recte_animation();
                     } else {
-                        num++;
-                        mGoodView.show(DoneView.this);
-                        pic = mBped;
-                        invalidate();
-                    }
+                        if (num == 0) {
+                            num++;
+                            set_circle_to_recte_animation();
+                        } else {
+                            num++;
+                            mGoodView.show(DoneView.this);
+                            pic = mBped;
+                            invalidate();
+                        }
+
+
                 }
             }
         });
@@ -229,6 +224,21 @@ public class DoneView extends View {
         invalidate();
     }
 
+    public void setOnLickClickListener(OnClickLikeListener listener) {
+        this.mListener = listener;
+    }
+
+
+    public void setDone(boolean done, int num, OnClickLikeListener listener) {
+        this.isDone = done;
+        pic = isDone ? mBped : mBp;
+        this.num = num;
+
+        this.mListener = listener;
+        requestLayout();
+    }
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         final float left = mWidth - padding - 2 * defAngle;
@@ -252,12 +262,16 @@ public class DoneView extends View {
         super.onDetachedFromWindow();
     }
 
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mWidth = (int) (2 * padding + mLinWidth * 2 + inPadding * 2 + bpSize + cPadding + textWidth);
         mHeight = (int) dptopx(25);
         mDefault__distance = (int) (mWidth - 2 * padding - 2 * defAngle);
+        if (num > 0) {
+            mCurDistance = mDefault__distance;
+        } else {
+            mCurDistance = 0;
+        }
         setMeasuredDimension(mWidth, mHeight);
     }
 }

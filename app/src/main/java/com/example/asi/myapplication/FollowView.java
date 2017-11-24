@@ -26,17 +26,17 @@ import android.view.View;
 */
 public class FollowView extends View {
 
-    public interface OnFollowListener {
-        void onFollow();
+    public interface OnClickFollowListener {
+        void onClick();
     }
 
     private float PADDING_WIDTH;
     private float PADDING_HEIGHT;
-    private OnFollowListener mListener;
+    private OnClickFollowListener mListener;
 
     private ValueAnimator mObjectAnimator;
 
-    private float mCurAniValue ;    //当前属性动画数值
+    private float mCurAniValue;    //当前属性动画数值
     private static final String mFollowStr = "+关注";
 
     private Paint mTexPaint;
@@ -124,12 +124,11 @@ public class FollowView extends View {
                         setEnabled(false);
                         changeFollow();
                         if (mListener != null) {
-                            mListener.onFollow();
+                            mListener.onClick();
                         }
                     } else {
                         setEnabled(false);
                     }
-
             }
         });
 
@@ -186,8 +185,8 @@ public class FollowView extends View {
         }
     }
 
-    public void setOnFollowListener(OnFollowListener onFollowListener) {
-        this.mListener = onFollowListener;
+    public void setOnFollowListener(OnClickFollowListener onClickFollowListener) {
+        this.mListener = onClickFollowListener;
     }
 
     /**
@@ -204,7 +203,22 @@ public class FollowView extends View {
         mIsFollow = isFollow;
         isChanging = false;
         setEnabled(!isFollow);
-        invalidate();
+        requestLayout();
+    }
+
+    public void setFollow(boolean isFollow, OnClickFollowListener onClickFollowListener) {
+        this.mListener = onClickFollowListener;
+        if (mIsFollow == isFollow) {
+            return;
+        }
+        //先结束当前动画
+        if (mObjectAnimator != null && mObjectAnimator.isRunning()) {
+            mObjectAnimator.end();
+        }
+        mIsFollow = isFollow;
+        isChanging = false;
+        setEnabled(!isFollow);
+        requestLayout();
     }
 
 
@@ -222,9 +236,9 @@ public class FollowView extends View {
         } else {
             mIvBounds.set(left, top, left + mIvWidth, top + mIvHeight);
 
-            if (!isChanging){
+            if (!isChanging) {
                 canvas.drawBitmap(mBitmap, null, mIvBounds, mBitmapPaint);
-            }else{
+            } else {
                 canvas.save();
                 canvas.clipRect(PADDING_WIDTH, PADDING_HEIGHT, mMeasuredWidth - PADDING_WIDTH, mMeasuredHeight - PADDING_HEIGHT);
                 float offset = x * mCurAniValue;
