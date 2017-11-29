@@ -3,14 +3,12 @@ package com.example.asi.myapplication;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -24,7 +22,7 @@ import com.example.asi.myapplication.good.GoodView;
  * @Description: 点赞view
  * @date 2017/11/8 19:59
  */
-public class DoneView extends View {
+public class LikeView extends View {
 
     public interface OnClickLikeListener {
         void onClick(boolean isDone);
@@ -41,12 +39,12 @@ public class DoneView extends View {
     private int num = 0;
     private ValueAnimator animator_circle_to_round;
     private float mCurDistance;//移动距离
-    private int mDefault__distance = 1;
+    private float mDefault__distance;
     private Bitmap mBp;
     private Bitmap mBped;
     private float bpSize, textWidth;
     private float inPadding, cPadding;//水平padding，竖直padding,文字和图标padding
-    String maxNum = "9.9k";//最多数字
+    String maxNum = "199.9k";//最多数字
     private Paint.FontMetrics mFontMetrics;
     private float textSize;//字体大小
     private float mLinWidth;
@@ -55,17 +53,17 @@ public class DoneView extends View {
 
     private GoodView mGoodView;
 
-    public DoneView(Context context) {
+    public LikeView(Context context) {
         this(context, null);
 
     }
 
 
-    public DoneView(Context context, @Nullable AttributeSet attrs) {
+    public LikeView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public DoneView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public LikeView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         mBp = BitmapFactory.decodeResource(getResources(), R.mipmap.vp_zan_click);
@@ -146,7 +144,7 @@ public class DoneView extends View {
                             set_circle_to_recte_animation();
                         } else {
                             num++;
-                            mGoodView.show(DoneView.this);
+                            mGoodView.show(LikeView.this);
                             pic = mBped;
                             invalidate();
                         }
@@ -161,13 +159,13 @@ public class DoneView extends View {
      * 设置圆角矩形过度到圆的动画
      */
     private void set_rect_to_circle_animation() {
-        animator_circle_to_round = ValueAnimator.ofInt(mDefault__distance, 0);
+        animator_circle_to_round = ValueAnimator.ofFloat(mDefault__distance, 0);
         animator_circle_to_round.removeAllUpdateListeners();
         animator_circle_to_round.setDuration(300);
         animator_circle_to_round.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mCurDistance = (int) animation.getAnimatedValue();
+                mCurDistance = (float) animation.getAnimatedValue();
                 //在靠拢的过程中设置文字的透明度，使文字逐渐消失的效果
                 int alpha = (int) ((mCurDistance * 255) / mDefault__distance);
                 mTextPaint.setAlpha(alpha);
@@ -186,19 +184,19 @@ public class DoneView extends View {
      * 设置圆过度到圆角矩形的动画
      */
     private void set_circle_to_recte_animation() {
-        animator_circle_to_round = ValueAnimator.ofInt(0, mDefault__distance);
+        animator_circle_to_round = ValueAnimator.ofFloat(0, mDefault__distance);
         animator_circle_to_round.removeAllUpdateListeners();
         animator_circle_to_round.setDuration(300);
         animator_circle_to_round.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mCurDistance = (int) animation.getAnimatedValue();
+                mCurDistance = (float) animation.getAnimatedValue();
                 //在靠拢的过程中设置文字的透明度，使文字逐渐消失的效果
                 int alpha = (int) ((mCurDistance * 255) / mDefault__distance);
                 mTextPaint.setAlpha(alpha);
                 if (mCurDistance == mDefault__distance) {
                     pic = mBped;
-                    mGoodView.show(DoneView.this);
+                    mGoodView.show(LikeView.this);
                 } else {
                     pic = mBp;
                 }
@@ -241,9 +239,9 @@ public class DoneView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        final float left = mWidth - padding - 2 * defAngle;
         final float right = mWidth - padding;
         final float bottom = mHeight - padding;
+        final float left = mDefault__distance+padding+mLinWidth;
 
         if (mCurDistance != 0) {
             float y = mHeight / 2 - mFontMetrics.top / 2 - mFontMetrics.bottom / 2;
@@ -251,7 +249,7 @@ public class DoneView extends View {
         }
 
         rectf.set(left - mCurDistance, padding, right, bottom);
-        rectBp.set(left + inPadding - mCurDistance, padding + inPadding, right - inPadding - mCurDistance, bottom - inPadding);
+        rectBp.set(left + inPadding - mCurDistance, padding + inPadding, left + inPadding - mCurDistance+bpSize, bottom - inPadding);
         canvas.drawRoundRect(rectf, defAngle, defAngle, mRoundPaint);
         canvas.drawBitmap(pic, null, rectBp, mBpPaint);
 
@@ -266,7 +264,7 @@ public class DoneView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mWidth = (int) (2 * padding + mLinWidth * 2 + inPadding * 2 + bpSize + cPadding + textWidth);
         mHeight = (int) dptopx(25);
-        mDefault__distance = (int) (mWidth - 2 * padding - 2 * defAngle);
+        mDefault__distance =textWidth+cPadding;
         if (num > 0) {
             mCurDistance = mDefault__distance;
         } else {

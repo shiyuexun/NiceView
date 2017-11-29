@@ -22,7 +22,7 @@
 
 
 
-    <com.example.asi.myapplication.DoneView
+    <com.example.asi.myapplication.LikeView
         android:id="@+id/countView2"
         android:layout_width="100dp"
         android:layout_height="50dp"
