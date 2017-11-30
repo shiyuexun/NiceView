@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
         mGoodView = new GoodView(this);
         mGoodView.setImage(R.mipmap.good_checked);
+
     }
 
     private void initView() {
